@@ -1,38 +1,64 @@
-# Foundry Template [![Open in Gitpod][gitpod-badge]][gitpod] [![Github Actions][gha-badge]][gha] [![Foundry][foundry-badge]][foundry] [![License: MIT][license-badge]][license]
+# Gas King of the Hill - A Blast Game
 
-[gitpod]: https://gitpod.io/#https://github.com/artdgn/blast-gas-king
-[gitpod-badge]: https://img.shields.io/badge/Gitpod-Open%20in%20Gitpod-FFB45B?logo=gitpod
-[gha]: https://github.com/artdgn/blast-gas-king/actions
-[gha-badge]: https://github.com/artdgn/blast-gas-king/actions/workflows/ci.yml/badge.svg
-[foundry]: https://getfoundry.sh/
-[foundry-badge]: https://img.shields.io/badge/Built%20with-Foundry-FFDB1C.svg
-[license]: https://opensource.org/licenses/MIT
-[license-badge]: https://img.shields.io/badge/License-MIT-blue.svg
+Burn gas for points, claim everyone's refund.
 
-A Foundry-based template for developing Solidity smart contracts, with sensible defaults.
+## Game
 
-## What's Inside
+1. GasKingGame is used to create Hills (game servers) which differ only by `claimDelay`. There's a default hill with 1 hour delay.
+2. The Hill is where the game is played. Each player competes for points by burning gas via `play` (or via triggerring `fallback/receive` with any calldata).
+3. The player with the most points can claim all the contract's (Hill's) gas fees after they have been "king" longer than the `claimDelay`.
+4. After a successful claim, a new round of the game starts.
 
-- [Forge](https://github.com/foundry-rs/foundry/blob/master/forge): compile, test, fuzz, format, and deploy smart
-  contracts
-- [Forge Std](https://github.com/foundry-rs/forge-std): collection of helpful contracts and cheatcodes for testing
-- [PRBTest](https://github.com/PaulRBerg/prb-test): modern collection of testing assertions and logging utilities
-- [Prettier](https://github.com/prettier/prettier): code formatter for non-Solidity files
-- [Solhint](https://github.com/protofire/solhint): linter for Solidity code
+## Interfaces:
 
-## Getting Started
+```solidity
+interface GasKingGame {
+  // mutative
+  function createHill(uint claimDelay) external returns (address hill);
+  function claimFactoryGasAndETH() external returns (uint amount);
+  function claimableRevert() external;
+  receive() external payable;
 
-Click the [`Use this template`](https://github.com/PaulRBerg/foundry-template/generate) button at the top of the page to
-create a new repository with this repo as the initial state.
+  // views
+  function hillAddresses(uint) external view returns (address);
+  function lastHillIndex() external view returns (uint);
 
-Or, if you prefer to install the template manually:
+  event GasFeesClaimed(uint amount);
+  event HillCreated(uint claimDelay, address hill);
 
-```sh
-$ mkdir my-project
-$ cd my-project
-$ forge init --template PaulRBerg/foundry-template
-$ bun install # install Solhint, Prettier, and other Node.js deps
+  error Claimable(uint amount);
+}
+
+interface Hill {
+  // mutative
+  receive() external payable;
+  fallback() external payable;
+  function play(uint minGas) external;
+  function claimWinnings() external returns (uint amount);
+  function claimableRevert() external;
+
+  // views
+  function claimDelay() external view returns (uint);
+  function lastRoundIndex() external view returns (uint);
+  function players(address) external view returns (uint points, uint lastRoundPlayed);
+  function rounds(uint)
+    external
+    view
+    returns (uint lastCoronationTimestamp, address currentKing, uint totalPoints);
+
+  event Burned(address indexed sender, bool indexed isWinning, uint amount, uint gas);
+  event GasFeesClaimed(uint amount);
+  event NewRound(uint roundIndex);
+  event RoundWon(address indexed winner, uint amount, uint winnerPoints, uint totalPoints);
+
+  error Claimable(uint amount);
+}
 ```
+
+
+-----------
+
+## Template stuff
 
 If this is your first time with Foundry, check out the
 [installation](https://github.com/foundry-rs/foundry#installation) instructions.

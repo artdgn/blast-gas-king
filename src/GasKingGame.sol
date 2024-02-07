@@ -2,7 +2,7 @@
 pragma solidity 0.8.19;
 
 abstract contract GasClaimer {
-    IBlast public immutable blast = IBlast(0x4300000000000000000000000000000000000002);
+    IBlast internal immutable blast = IBlast(0x4300000000000000000000000000000000000002);
 
     event GasFeesClaimed(uint amount);
 
@@ -15,7 +15,7 @@ abstract contract GasClaimer {
 
     //////// External mutative ////////
 
-    receive() external payable { }
+    receive() external payable virtual { }
 
     /// @notice this can be used to "simulate" a claim to understand how much is claimable
     function claimableRevert() external {
@@ -102,14 +102,21 @@ contract Hill is GasClaimer {
 
     //////// External mutative ////////
 
-    /// @notice fallback is cheapest in terms of L1 calldata cost (which are not refunded)
+    /// @notice receive can be is cheapest in terms of L1 calldata cost (which are not refunded)
+    receive() external payable override {
+        if (msg.sender != address(blast)) {
+            _burnGasForPoints();
+        }
+    }
+
+    /// @notice fallback is most flexible
     fallback() external payable {
         _burnGasForPoints();
     }
 
-    /// @notice fallback is cheaper (in terms of L1 calldata cost), but this is easier to integrate with
+    /// @notice receive is cheaper (in terms of L1 calldata cost), but this is easier to integrate with
     /// This just checks that at least minGas gas is provided, but burns everything if more is provided
-    function play(uint minGas) external {
+    function play(uint minGas) external payable {
         require(gasleft() >= minGas, "not enough gas provided");
         _burnGasForPoints();
     }
