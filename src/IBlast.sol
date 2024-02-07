@@ -41,36 +41,36 @@ interface IBlast {
     function claimYield(
         address contractAddress,
         address recipientOfYield,
-        uint256 amount
+        uint amount
     )
         external
-        returns (uint256);
-    function claimAllYield(address contractAddress, address recipientOfYield) external returns (uint256);
+        returns (uint);
+    function claimAllYield(address contractAddress, address recipientOfYield) external returns (uint);
 
     // claim gas
-    function claimAllGas(address contractAddress, address recipientOfGas) external returns (uint256);
+    function claimAllGas(address contractAddress, address recipientOfGas) external returns (uint);
     function claimGasAtMinClaimRate(
         address contractAddress,
         address recipientOfGas,
-        uint256 minClaimRateBips
+        uint minClaimRateBips
     )
         external
-        returns (uint256);
-    function claimMaxGas(address contractAddress, address recipientOfGas) external returns (uint256);
+        returns (uint);
+    function claimMaxGas(address contractAddress, address recipientOfGas) external returns (uint);
     function claimGas(
         address contractAddress,
         address recipientOfGas,
-        uint256 gasToClaim,
-        uint256 gasSecondsToConsume
+        uint gasToClaim,
+        uint gasSecondsToConsume
     )
         external
-        returns (uint256);
+        returns (uint);
 
     // read functions
-    function readClaimableYield(address contractAddress) external view returns (uint256);
+    function readClaimableYield(address contractAddress) external view returns (uint);
     function readYieldConfiguration(address contractAddress) external view returns (uint8);
     function readGasParams(address contractAddress)
         external
         view
-        returns (uint256 etherSeconds, uint256 etherBalance, uint256 lastUpdated, GasMode);
+        returns (uint etherSeconds, uint etherBalance, uint lastUpdated, GasMode);
 }
