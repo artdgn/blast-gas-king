@@ -5,7 +5,7 @@ import { PRBTest } from "@prb/test/src/PRBTest.sol";
 import { console2 } from "forge-std/src/console2.sol";
 import { StdCheats } from "forge-std/src/StdCheats.sol";
 
-import {GasKing} from "../src/GasKing.sol";
+import {GasKingGame} from "../src/GasKing.sol";
 
 interface IERC20 {
     function balanceOf(address account) external view returns (uint256);
@@ -14,7 +14,7 @@ interface IERC20 {
 /// @dev If this is your first time with Forge, read this tutorial in the Foundry Book:
 /// https://book.getfoundry.sh/forge/writing-tests
 contract GasKingTest is PRBTest, StdCheats {
-    GasKing internal foo;
+    GasKingGame internal foo;
 
     /// @dev A function invoked before each test case is run.
     function setUp() public virtual {
