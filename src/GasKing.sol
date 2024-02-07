@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.23;
+pragma solidity 0.8.19;
 
 abstract contract GasClaimer {
     IBlast public immutable blast = IBlast(0x4300000000000000000000000000000000000002);
