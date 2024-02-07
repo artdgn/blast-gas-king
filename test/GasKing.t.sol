@@ -5,7 +5,7 @@ import { PRBTest } from "@prb/test/src/PRBTest.sol";
 import { console2 } from "forge-std/src/console2.sol";
 import { StdCheats } from "forge-std/src/StdCheats.sol";
 
-import { Foo } from "../src/Foo.sol";
+import {GasKing} from "../src/GasKing.sol";
 
 interface IERC20 {
     function balanceOf(address account) external view returns (uint256);
@@ -13,13 +13,13 @@ interface IERC20 {
 
 /// @dev If this is your first time with Forge, read this tutorial in the Foundry Book:
 /// https://book.getfoundry.sh/forge/writing-tests
-contract FooTest is PRBTest, StdCheats {
-    Foo internal foo;
+contract GasKingTest is PRBTest, StdCheats {
+    GasKing internal foo;
 
     /// @dev A function invoked before each test case is run.
     function setUp() public virtual {
         // Instantiate the contract-under-test.
-        foo = new Foo();
+        foo = new GasKing();
     }
 
     /// @dev Basic test. Run it with `forge test -vvv` to see the console log.
@@ -29,7 +29,8 @@ contract FooTest is PRBTest, StdCheats {
         assertEq(foo.id(x), x, "value mismatch");
     }
 
-    /// @dev Fuzz test that provides random values for an unsigned integer, but which rejects zero as an input.
+    /// @dev Fuzz test that provides random values for an unsigned integer, but which rejects zero as an
+    /// input.
     /// If you need more sophisticated input validation, you should use the `bound` utility instead.
     /// See https://twitter.com/PaulRBerg/status/1622558791685242880
     function testFuzz_Example(uint256 x) external {
@@ -37,7 +38,8 @@ contract FooTest is PRBTest, StdCheats {
         assertEq(foo.id(x), x, "value mismatch");
     }
 
-    /// @dev Fork test that runs against an Ethereum Mainnet fork. For this to work, you need to set `API_KEY_ALCHEMY`
+    /// @dev Fork test that runs against an Ethereum Mainnet fork. For this to work, you need to set
+    /// `API_KEY_ALCHEMY`
     /// in your environment You can get an API key for free at https://alchemy.com.
     function testFork_Example() external {
         // Silently pass this test if there is no API key.
