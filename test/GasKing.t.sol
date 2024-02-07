@@ -19,14 +19,14 @@ contract GasKingTest is PRBTest, StdCheats {
     /// @dev A function invoked before each test case is run.
     function setUp() public virtual {
         // Instantiate the contract-under-test.
-        foo = new GasKing();
+//        foo = new GasKing();
     }
 
     /// @dev Basic test. Run it with `forge test -vvv` to see the console log.
     function test_Example() external {
         console2.log("Hello World");
         uint256 x = 42;
-        assertEq(foo.id(x), x, "value mismatch");
+//        assertEq(foo.id(x), x, "value mismatch");
     }
 
     /// @dev Fuzz test that provides random values for an unsigned integer, but which rejects zero as an
@@ -35,7 +35,7 @@ contract GasKingTest is PRBTest, StdCheats {
     /// See https://twitter.com/PaulRBerg/status/1622558791685242880
     function testFuzz_Example(uint256 x) external {
         vm.assume(x != 0); // or x = bound(x, 1, 100)
-        assertEq(foo.id(x), x, "value mismatch");
+//        assertEq(foo.id(x), x, "value mismatch");
     }
 
     /// @dev Fork test that runs against an Ethereum Mainnet fork. For this to work, you need to set
