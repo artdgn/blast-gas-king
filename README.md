@@ -1,12 +1,12 @@
-# Gas King of the Hill - A Blast Game
+# Gas King of the Hill - A Blast of a Game
 
 Burn gas for points, claim everyone's refund.
 
 ## Game
 
-1. GasKingGame is used to create Hills (game servers) which differ only by `claimDelay`. There's a default hill with 1 hour delay.
-2. The Hill is where the game is played. Each player competes for points by burning gas via `play` (or via triggerring `fallback/receive` with any calldata).
-3. The player with the most points can claim all the contract's (Hill's) gas fees after they have been "king" longer than the `claimDelay`.
+1. `GasKingGame` is used to create `Hill`s (game servers) which differ only by `claimDelay`. There's a default hill with 1 hour delay.
+2. The `Hill` is where the game is played. Each player competes for points by burning gas via `play` (or via triggerring `fallback/receive` with any calldata).
+3. The player with the most points can claim all the contract's (`Hill`'s) gas fees after they have been "king" longer than `claimDelay`.
 4. After a successful claim, a new round of the game starts.
 
 ## Interfaces:

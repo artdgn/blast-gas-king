@@ -102,7 +102,7 @@ contract Hill is GasClaimer {
 
     //////// External mutative ////////
 
-    /// @notice receive can be is cheapest in terms of L1 calldata cost (which are not refunded)
+    /// @notice receive is cheapest in terms of L1 calldata cost (which is not refunded)
     receive() external payable override {
         if (msg.sender != address(blast)) {
             _burnGasForPoints();
