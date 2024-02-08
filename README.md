@@ -10,9 +10,9 @@ Burn gas for points, claim everyone's refund.
 4. After a successful claim, a new round of the game starts.
 
 ## Deployments on https://testnet.blastscan.io/:
-1. `GasKingGame`: 0x3671b39b03Fa31B38eaa58FAd9F91b370A7f8AA1
-2. Default `Hill` (1 hour): 0x6E28B002902166978837da3487F64A7a6c717c74
-3. 10 Second `Hill`: 0xB729359077836ce1359BeED5dD34A374430A3EA1
+1. `GasKingGame`: 0x0133b68BF652aa732A46208a46178905803e77dD
+2. Default `Hill` (1 hour): 0x8Cd49Ce143a0b6CEa62A17EfB092f215Dc7cbb25
+3. 60 Second `Hill`: 0x3B254763671FEF91F42BEe28c0A693b2b63Fe183
 
 ## Interfaces:
 

@@ -23,14 +23,19 @@ abstract contract GasClaimer {
         revert Claimable(claimable);
     }
 
+    function readGasParams()
+        external
+        view
+        returns (uint etherSeconds, uint etherBalance, uint lastUpdated, IBlast.GasMode)
+    {
+        return blast.readGasParams(address(this));
+    }
+
     //////// Internal ////////
 
     function _claimGas() internal returns (uint claimed) {
         uint before = address(this).balance;
-        // claims whatever is claimable, and the rest is sent to sequencer
         blast.claimAllGas(address(this), address(this));
-        // // claims only up to max claimable, and leaves the rest to mature later
-        // blast.claimMaxGas(address(this), address(this));
         claimed = address(this).balance - before;
         emit GasFeesClaimed(claimed);
     }
@@ -189,4 +194,13 @@ interface IBlast {
     function configureClaimableGas() external;
     function claimAllGas(address contractAddress, address recipientOfGas) external returns (uint);
     function claimMaxGas(address contractAddress, address recipientOfGas) external returns (uint);
+    function readGasParams(address contractAddress)
+        external
+        view
+        returns (uint etherSeconds, uint etherBalance, uint lastUpdated, GasMode);
+
+    enum GasMode {
+        VOID,
+        CLAIMABLE
+    }
 }
