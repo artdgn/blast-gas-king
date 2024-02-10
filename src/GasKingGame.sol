@@ -11,6 +11,7 @@ abstract contract GasClaimer {
 
     constructor() {
         blast.configureClaimableGas();
+        blast.configureAutomaticYield();
     }
 
     //////// External mutative ////////
@@ -47,7 +48,9 @@ contract GasKingGame is GasClaimer {
     event HillCreated(uint claimDelay, address hill);
 
     constructor() {
-        createHill(1 hours); // first default hill
+        createHill(60);
+        createHill(1 hours);
+        createHill(1 days);
     }
 
     //////// External mutative ////////
@@ -75,7 +78,7 @@ contract GasKingGame is GasClaimer {
 }
 
 contract Hill is GasClaimer {
-    /// @notice how long can the king wait after taking the lead before being able claim the pot for the round
+    /// @notice how long must the king wait after taking the lead before being able claim the pot for the round
     uint public immutable claimDelay;
 
     uint internal constant GAS_SAFETY_BUFFER = 1000;
@@ -86,17 +89,27 @@ contract Hill is GasClaimer {
     }
 
     struct Round {
+        // accounting fields (used as inputs)
         uint lastCoronationTimestamp;
         address currentKing;
+        // historical fields for UI (not used as inputs, but as "subgraph")
         uint totalPoints;
+        uint winnings;
+        PlayHistory[] plays;
+    }
+
+    struct PlayHistory {
+        address player;
+        uint points;
     }
 
     mapping(address => Player) public players;
+    // @dev use getRound to get full struct (with nested array)
     Round[] public rounds;
 
-    event Burned(address indexed sender, bool indexed isWinning, uint amount, uint gas);
+    event Burned(address indexed sender, uint indexed roundIndex, bool indexed isWinning, uint amount, uint gas);
     event NewRound(uint roundIndex);
-    event RoundWon(address indexed winner, uint amount, uint winnerPoints, uint totalPoints);
+    event RoundWon(address indexed winner, uint roundIndex, uint amount, uint winnerPoints, uint totalPoints);
 
     constructor(uint _claimDelay) {
         require(_claimDelay > 0, "0 claim delay");
@@ -133,18 +146,27 @@ contract Hill is GasClaimer {
         require(msg.sender == round.currentKing, "not king of the hill");
         require(block.timestamp >= round.lastCoronationTimestamp + claimDelay, "not king long enough yet");
 
+        // claim winnings
+        _claimGas();
+        amount = address(this).balance;
+
+        // history (for UI)
+        round.winnings = amount;
+        emit RoundWon(msg.sender, lastRoundIndex(), amount, players[msg.sender].points, round.totalPoints);
+
         // new round now before external call
         _startNewRound();
 
-        // claim and send winnings
-        _claimGas();
-        amount = address(this).balance;
+        // send
         (bool success,) = address(msg.sender).call{ value: amount }("");
         require(success, "ETH transfer failed");
-        emit RoundWon(msg.sender, amount, players[msg.sender].points, round.totalPoints);
     }
 
     //////// External views ////////
+
+    function getRound(uint roundIndex) external view returns (Round memory) {
+        return rounds[roundIndex];
+    }
 
     function lastRoundIndex() public view returns (uint) {
         return rounds.length - 1;
@@ -173,9 +195,11 @@ contract Hill is GasClaimer {
             round.currentKing = msg.sender;
             round.lastCoronationTimestamp = block.timestamp; // ta-da-da-da!!
         }
-        round.totalPoints += newPoints;
 
-        emit Burned(msg.sender, isPlayerWinning, newPoints, gas);
+        // history
+        round.totalPoints += newPoints;
+        round.plays.push(PlayHistory(msg.sender, newPoints));
+        emit Burned(msg.sender, roundIndex, isPlayerWinning, newPoints, gas);
 
         // burn the rest
         uint i;
@@ -185,12 +209,16 @@ contract Hill is GasClaimer {
     }
 
     function _startNewRound() internal {
-        rounds.push(Round(block.timestamp, address(0), 0));
+        rounds.push();
         emit NewRound(lastRoundIndex());
     }
 }
 
 interface IBlast {
+    // yield
+    function configureAutomaticYield() external;
+
+    // gas
     function configureClaimableGas() external;
     function claimAllGas(address contractAddress, address recipientOfGas) external returns (uint);
     function claimMaxGas(address contractAddress, address recipientOfGas) external returns (uint);

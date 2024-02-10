@@ -1,6 +1,6 @@
 # Gas King of the Hill - A Blast of a Game
 
-Burn gas for points, claim everyone's refund.
+Burn gas for points, claim everyone's refund. Wait longer to claim more.
 
 ## Game
 
