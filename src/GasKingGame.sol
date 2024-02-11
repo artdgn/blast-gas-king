@@ -18,10 +18,20 @@ abstract contract GasClaimer {
 
     receive() external payable virtual { }
 
-    /// @notice this can be used to "simulate" a claim to understand how much is claimable
+    /// @notice this is used to simulate a claim using the claimableRevert method to understand how much is claimable
+    function claimableSimulate() external returns (uint claimable) {
+        (bool success, bytes memory data) = address(this).call(abi.encodeCall(this.claimableRevert, ()));
+        assert(!success); // check that it reverts
+        claimable = abi.decode(data, (uint));
+    }
+
+    /// @notice used by claimableSimulate to claim and revert because there's no view for this on blast
     function claimableRevert() external {
         uint claimable = _claimGas();
-        revert Claimable(claimable);
+        assembly {
+            mstore(0, claimable) // mstore it as revert reason
+            revert(0, 32) // revert execution
+        }
     }
 
     function readGasParams()
