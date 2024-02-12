@@ -2,7 +2,7 @@
 pragma solidity 0.8.19;
 
 abstract contract GasClaimer {
-    IBlast internal immutable blast = IBlast(0x4300000000000000000000000000000000000002);
+    IBlast internal constant BLAST = IBlast(0x4300000000000000000000000000000000000002);
 
     event GasFeesClaimed(uint amount);
 
@@ -10,8 +10,8 @@ abstract contract GasClaimer {
     error Claimable(uint amount);
 
     constructor() {
-        blast.configureClaimableGas();
-        blast.configureAutomaticYield();
+        BLAST.configureClaimableGas();
+        BLAST.configureAutomaticYield();
     }
 
     //////// External mutative ////////
@@ -39,14 +39,14 @@ abstract contract GasClaimer {
         view
         returns (uint etherSeconds, uint etherBalance, uint lastUpdated, IBlast.GasMode)
     {
-        return blast.readGasParams(address(this));
+        return BLAST.readGasParams(address(this));
     }
 
     //////// Internal ////////
 
     function _claimGas() internal returns (uint claimed) {
         uint before = address(this).balance;
-        blast.claimAllGas(address(this), address(this));
+        BLAST.claimAllGas(address(this), address(this));
         claimed = address(this).balance - before;
         emit GasFeesClaimed(claimed);
     }
@@ -88,10 +88,11 @@ contract GasKingGame is GasClaimer {
 }
 
 contract Hill is GasClaimer {
+    uint internal constant GAS_SAFETY_BUFFER = 1000;
+    address internal constant GAS_CONTRACT = 0x4300000000000000000000000000000000000001;
+
     /// @notice how long must the king wait after taking the lead before being able claim the pot for the round
     uint public immutable claimDelay;
-
-    uint internal constant GAS_SAFETY_BUFFER = 1000;
 
     struct Player {
         uint points;
@@ -132,7 +133,7 @@ contract Hill is GasClaimer {
 
     /// @notice receive is cheapest in terms of L1 calldata cost (which is not refunded)
     receive() external payable override {
-        if (msg.sender != address(blast)) {
+        if (msg.sender != GAS_CONTRACT) { // GAS system address
             _burnGasForPoints();
         }
     }
