@@ -9,10 +9,8 @@ Burn gas for points, claim everyone's refund. Wait longer to claim more.
 3. The player with the most points can claim all the contract's (`Hill`'s) gas fees after they have been "king" longer than `claimDelay`.
 4. After a successful claim, a new round of the game starts.
 
-## Deployments on https://testnet.blastscan.io/:
-1. `GasKingGame`: 0x0133b68BF652aa732A46208a46178905803e77dD
-2. Default `Hill` (1 hour): 0x8Cd49Ce143a0b6CEa62A17EfB092f215Dc7cbb25
-3. 60 Second `Hill`: 0x3B254763671FEF91F42BEe28c0A693b2b63Fe183
+## Deployment on https://testnet.blastscan.io/:
+1. `GasKingGame` (w. 3 default hills): 0xb718c9777bf33483e32865C6FDFed09188efEfbB
 
 ## Interfaces:
 
