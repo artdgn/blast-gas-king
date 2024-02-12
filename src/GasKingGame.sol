@@ -18,7 +18,7 @@ abstract contract GasClaimer {
 
     receive() external payable virtual { }
 
-    /// @notice this is used to simulate a claim using the claimableRevert method to understand how much is claimable
+    /// @notice used to simulate a claim using claimableRevert method to check how much is claimable
     function claimableSimulate() external returns (uint claimable) {
         (bool success, bytes memory data) = address(this).call(abi.encodeCall(this.claimableRevert, ()));
         assert(!success); // check that it reverts
@@ -91,7 +91,8 @@ contract Hill is GasClaimer {
     uint internal constant GAS_SAFETY_BUFFER = 1000;
     address internal constant GAS_CONTRACT = 0x4300000000000000000000000000000000000001;
 
-    /// @notice how long must the king wait after taking the lead before being able claim the pot for the round
+    /// @notice how long must the king wait after taking the lead before being able
+    /// claim the pot for the round
     uint public immutable claimDelay;
 
     struct Player {
@@ -118,7 +119,9 @@ contract Hill is GasClaimer {
     // @dev use getRound to get full struct (with nested array)
     Round[] public rounds;
 
-    event Burned(address indexed sender, uint indexed roundIndex, bool indexed isWinning, uint amount, uint gas);
+    event Burned(
+        address indexed sender, uint indexed roundIndex, bool indexed isWinning, uint amount, uint gas
+    );
     event NewRound(uint roundIndex);
     event RoundWon(address indexed winner, uint roundIndex, uint amount, uint winnerPoints, uint totalPoints);
 
@@ -133,7 +136,8 @@ contract Hill is GasClaimer {
 
     /// @notice receive is cheapest in terms of L1 calldata cost (which is not refunded)
     receive() external payable override {
-        if (msg.sender != GAS_CONTRACT) { // GAS system address
+        if (msg.sender != GAS_CONTRACT) {
+            // GAS system address
             _burnGasForPoints();
         }
     }
