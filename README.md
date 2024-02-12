@@ -2,12 +2,26 @@
 
 Burn gas for points, claim everyone's refund. Wait longer to claim more.
 
-## Game
+## Quick Game Rules
+Earn points and become the King of the Hill by burning gas. The game is played in rounds on various Hills.
 
-1. `GasKingGame` is used to create `Hill`s (game servers) which differ only by `claimDelay`. There's a default hill with 1 hour delay.
+The King can claim a refund for all gas burned during the round after a certain delay (`claimDelay`). Keep earning points during this time to maintain your lead. If someone else takes the lead, the wait time resets.
+
+According to [Blast's rules](https://docs.blast.io/building/guides/gas-fees#claiming-gas-fees) refunds grow over time, from 50% to 100%.
+
+Player Strategies:
+- **First Player**: If no one challenges you, wait until 100% refund to get all your fees back.
+- **Second Player**: Overtake the leader and you're guaranteed to earn more than what you spent, thanks to a minimum 50% fee claim.
+- **Beyond Two Players**: More competition means profit for the winner is guaranteed.
+
+## Contracts flow
+
+1. `GasKingGame` contract is used to create `Hill`s (game servers) which differ only by `claimDelay`. There's 3 default hills (1 minutes, 1 hour, 1 day).
 2. The `Hill` is where the game is played. Each player competes for points by burning gas via `play` (or via triggerring `fallback/receive` with any calldata).
 3. The player with the most points can claim all the contract's (`Hill`'s) gas fees after they have been "king" longer than `claimDelay`.
 4. After a successful claim, a new round of the game starts.
+5. Historical data is saved for previous plays and accessible via `getRound`.
+6. Claimable amount off-chain is accessible via `claimableSimulate`.
 
 ## Deployment on https://testnet.blastscan.io/:
 1. `GasKingGame` (w. 3 default hills): 0xb718c9777bf33483e32865C6FDFed09188efEfbB
