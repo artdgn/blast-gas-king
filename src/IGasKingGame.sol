@@ -14,7 +14,7 @@ interface GasKingGame {
 
 interface Hill {
     // mutative
-    function play() external payable;
+    function burnForPoints() external payable;
     function claimWinnings() external returns (uint amount);
     receive() external payable;
 

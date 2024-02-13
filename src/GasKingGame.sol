@@ -124,9 +124,9 @@ contract Hill is GasClaimer {
 
     //////// External mutative ////////
 
-    /// @notice burns any gas provided for points
+    /// @notice burns all gas provided for points
     /// @dev needs at least 160K gas for first play in a round
-    function play() external payable {
+    function burnForPoints() public payable {
         uint gas = gasleft() - GAS_SAFETY_BUFFER;
         uint newPoints = gas * tx.gasprice;
 

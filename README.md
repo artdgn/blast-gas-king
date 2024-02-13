@@ -32,7 +32,7 @@ Player Strategies:
 6. Claimable amount off-chain is accessible via `claimableSimulate`.
 
 ## Deployment on https://testnet.blastscan.io/:
-1. `GasKingGame` (w. 3 default hills): 0xb718c9777bf33483e32865C6FDFed09188efEfbB
+1. `GasKingGame` (w. 3 default hills): 0xF64E27cbb8bc66745a0343f8a73b678e34Ba5fad
 
 ## Interfaces:
 
@@ -50,10 +50,9 @@ interface GasKingGame {
 
 interface Hill {
   // mutative
-  function play() external payable;
-  receive() external payable;
-  fallback() external payable;
+  function burnForPoints() external payable;
   function claimWinnings() external returns (uint amount);
+  receive() external payable;
 
   // mutative but should be used as view (via simulation)
   function claimableSimulate() external returns (uint claimable);
