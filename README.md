@@ -42,7 +42,7 @@ interface GasKingGame {
 
 interface Hill {
   // mutative
-  function play(uint minGas) external payable;
+  function play() external payable;
   receive() external payable;
   fallback() external payable;
   function claimWinnings() external returns (uint amount);
@@ -55,15 +55,12 @@ interface Hill {
   function lastRoundIndex() external view returns (uint);
   function getRound(uint roundIndex) external view returns (Round memory);
   function players(address) external view returns (uint points, uint lastRoundPlayed);
-  function readGasParams()
-      external
-      view
-      returns (uint etherSeconds, uint etherBalance, uint lastUpdated, uint8 gasMode);
 
   // view structs
   struct PlayHistory {
       address player;
       uint points;
+      uint timestamp;
   }
 
   struct Round {

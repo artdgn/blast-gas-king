@@ -6,9 +6,6 @@ abstract contract GasClaimer {
 
     event GasFeesClaimed(uint amount);
 
-    /// @dev note that this is an error that's used as "view"
-    error Claimable(uint amount);
-
     constructor() {
         BLAST.configureClaimableGas();
         BLAST.configureAutomaticYield();
@@ -32,14 +29,6 @@ abstract contract GasClaimer {
             mstore(0, claimable) // mstore it as revert reason
             revert(0, 32) // revert execution
         }
-    }
-
-    function readGasParams()
-        external
-        view
-        returns (uint etherSeconds, uint etherBalance, uint lastUpdated, IBlast.GasMode)
-    {
-        return BLAST.readGasParams(address(this));
     }
 
     //////// Internal ////////
@@ -113,6 +102,7 @@ contract Hill is GasClaimer {
     struct PlayHistory {
         address player;
         uint points;
+        uint timestamp;
     }
 
     mapping(address => Player) public players;
@@ -134,24 +124,40 @@ contract Hill is GasClaimer {
 
     //////// External mutative ////////
 
-    /// @notice receive is cheapest in terms of L1 calldata cost (which is not refunded)
-    receive() external payable override {
-        if (msg.sender != GAS_CONTRACT) {
-            // GAS system address
-            _burnGasForPoints();
+    /// @notice burns any gas provided for points
+    /// @dev needs at least 160K gas for first play in a round
+    function play() external payable {
+        uint gas = gasleft() - GAS_SAFETY_BUFFER;
+        uint newPoints = gas * tx.gasprice;
+
+        uint roundIndex = lastRoundIndex();
+        Player storage player = players[msg.sender];
+        Round storage round = rounds[roundIndex];
+
+        // update player data
+        // add to previous points if already played during this round
+        uint previousPoints = player.lastRoundPlayed == roundIndex ? player.points : 0;
+        player.points = newPoints + previousPoints;
+        player.lastRoundPlayed = roundIndex;
+
+        // update round data
+        bool isPlayerWinning = player.points > players[round.currentKing].points;
+        if (isPlayerWinning && round.currentKing != msg.sender) {
+            // the king is dead, long live the king
+            round.currentKing = msg.sender;
+            round.lastCoronationTimestamp = block.timestamp; // ta-da-da-da!!
         }
-    }
 
-    /// @notice fallback is most flexible
-    fallback() external payable {
-        _burnGasForPoints();
-    }
+        // history
+        round.totalPoints += newPoints;
+        round.plays.push(PlayHistory(msg.sender, newPoints, block.timestamp));
+        emit Burned(msg.sender, roundIndex, isPlayerWinning, newPoints, gas);
 
-    /// @notice receive is cheaper (in terms of L1 calldata cost), but this is easier to integrate with
-    /// This just checks that at least minGas gas is provided, but burns everything if more is provided
-    function play(uint minGas) external payable {
-        require(gasleft() >= minGas, "not enough gas provided");
-        _burnGasForPoints();
+        // burn the rest
+        uint i;
+        while (gasleft() > GAS_SAFETY_BUFFER) {
+            i++;
+        }
     }
 
     /// @notice claims all gas fees and any ETH balance to sender if they are current round's king for
@@ -189,40 +195,6 @@ contract Hill is GasClaimer {
 
     //////// Internal ////////
 
-    function _burnGasForPoints() internal {
-        uint gas = gasleft() - GAS_SAFETY_BUFFER;
-        uint newPoints = gas * tx.gasprice;
-
-        uint roundIndex = lastRoundIndex();
-        Player storage player = players[msg.sender];
-        Round storage round = rounds[roundIndex];
-
-        // update player data
-        // add to previous points if already played during this round
-        uint previousPoints = player.lastRoundPlayed == roundIndex ? player.points : 0;
-        player.points = newPoints + previousPoints;
-        player.lastRoundPlayed = roundIndex;
-
-        // update round data
-        bool isPlayerWinning = player.points > players[round.currentKing].points;
-        if (isPlayerWinning && round.currentKing != msg.sender) {
-            // the king is dead, long live the king
-            round.currentKing = msg.sender;
-            round.lastCoronationTimestamp = block.timestamp; // ta-da-da-da!!
-        }
-
-        // history
-        round.totalPoints += newPoints;
-        round.plays.push(PlayHistory(msg.sender, newPoints));
-        emit Burned(msg.sender, roundIndex, isPlayerWinning, newPoints, gas);
-
-        // burn the rest
-        uint i;
-        while (gasleft() > GAS_SAFETY_BUFFER) {
-            i++;
-        }
-    }
-
     function _startNewRound() internal {
         rounds.push();
         emit NewRound(lastRoundIndex());
@@ -237,13 +209,4 @@ interface IBlast {
     function configureClaimableGas() external;
     function claimAllGas(address contractAddress, address recipientOfGas) external returns (uint);
     function claimMaxGas(address contractAddress, address recipientOfGas) external returns (uint);
-    function readGasParams(address contractAddress)
-        external
-        view
-        returns (uint etherSeconds, uint etherBalance, uint lastUpdated, GasMode);
-
-    enum GasMode {
-        VOID,
-        CLAIMABLE
-    }
 }
