@@ -14,6 +14,14 @@ Player Strategies:
 - **Second Player**: Overtake the leader and you're guaranteed to earn more than what you spent, thanks to a minimum 50% fee claim.
 - **Beyond Two Players**: More competition means profit for the winner is guaranteed.
 
+## Big Bang Competition
+
+- **Engaging Introduction to Blast**: Offers a fun, competitive platform for users to familiarize themselves with Blast's gas fee claiming mechanism.
+- **User Value**: The game's mechanics are easy to grasp, and the risks are minimal.
+- **Ecosystem Benefit**: Encourages early gas fee claims, benefiting the sequencer with high share of the fees while promoting network utilization.
+- **Showcases Blast's Uniqueness**: Highlights a distinctive feature of Blast L2, demonstrating the platform's innovative approach to gas fee management.
+- **Future Growth Potential**: Provides a foundation for more complex extensions, including additional reward systems like Blast points or reward NFTs.
+
 ## Contracts flow
 
 1. `GasKingGame` contract is used to create `Hill`s (game servers) which differ only by `claimDelay`. There's 3 default hills (1 minutes, 1 hour, 1 day).
