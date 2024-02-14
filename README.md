@@ -1,6 +1,6 @@
 # Gas King of the Hill - A Blast of a Game
 
-Burn gas for points, claim everyone's refund. Wait longer to claim more.
+Burn gas for points, claim everyone's refund. Wait longer to claim more. Live on Blast testnet at https://blastgasking.xyz/.
 
 ## Quick Game Rules
 Earn points and become the King of the Hill by burning gas. The game is played in rounds on various Hills.
