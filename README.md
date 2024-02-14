@@ -25,8 +25,8 @@ Player Strategies:
 ## Contracts flow
 
 1. `GasKingGame` contract is used to create `Hill`s (game servers) which differ only by `claimDelay`. There's 3 default hills (1 minutes, 1 hour, 1 day).
-2. The `Hill` is where the game is played. Each player competes for points by burning gas via `play` (or via triggerring `fallback/receive` with any calldata).
-3. The player with the most points can claim all the contract's (`Hill`'s) gas fees after they have been "king" longer than `claimDelay`.
+2. The `Hill` is where the game is played. Each player competes for points by burning gas via `burnForPoints`.
+3. The player with the most points can claim all the contract's (`Hill`'s) gas fees using `claimWinnings` if they have been "king" longer than `claimDelay`.
 4. After a successful claim, a new round of the game starts.
 5. Historical data is saved for previous plays and accessible via `getRound`.
 6. Claimable amount off-chain is accessible via `claimableSimulate`.
