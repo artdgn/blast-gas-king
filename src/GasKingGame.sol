@@ -17,8 +17,7 @@ abstract contract GasClaimer {
 
     /// @notice used to simulate a claim using claimableRevert method to check how much is claimable
     function claimableSimulate() external returns (uint claimable) {
-        (bool success, bytes memory data) = address(this).call(abi.encodeCall(this.claimableRevert, ()));
-        assert(!success); // check that it reverts
+        (, bytes memory data) = address(this).call(abi.encodeCall(this.claimableRevert, ()));
         claimable = abi.decode(data, (uint));
     }
 
