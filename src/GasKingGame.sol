@@ -2,7 +2,7 @@
 pragma solidity 0.8.19;
 
 abstract contract GasClaimer {
-    IBlast internal constant BLAST = IBlast(0x4300000000000000000000000000000000000002);
+    IBlast public constant BLAST = IBlast(0x4300000000000000000000000000000000000002);
 
     event GasFeesClaimed(uint amount);
 
@@ -13,7 +13,7 @@ abstract contract GasClaimer {
 
     //////// External mutative ////////
 
-    receive() external payable virtual { }
+    receive() external payable { }
 
     /// @notice used to simulate a claim using claimableRevert method to check how much is claimable
     function claimableSimulate() external returns (uint claimable) {
@@ -44,7 +44,7 @@ abstract contract GasClaimer {
 contract GasKingGame is GasClaimer {
     address[] public hillAddresses;
 
-    event HillCreated(uint claimDelay, address hill);
+    event HillCreated(uint indexed claimDelay, address hill);
 
     constructor() {
         createHill(60);
@@ -78,7 +78,6 @@ contract GasKingGame is GasClaimer {
 
 contract Hill is GasClaimer {
     uint internal constant GAS_SAFETY_BUFFER = 1000;
-    address internal constant GAS_CONTRACT = 0x4300000000000000000000000000000000000001;
 
     /// @notice how long must the king wait after taking the lead before being able
     /// claim the pot for the round
@@ -126,7 +125,7 @@ contract Hill is GasClaimer {
 
     /// @notice burns all gas provided for points
     /// @dev needs at least 160K gas for first play in a round
-    function burnForPoints() public payable {
+    function burnForPoints() public {
         uint gas = gasleft() - GAS_SAFETY_BUFFER;
         uint newPoints = gas * tx.gasprice;
 
@@ -143,8 +142,7 @@ contract Hill is GasClaimer {
         // update round data
         bool isPlayerWinning = player.points > players[round.currentKing].points;
         if (isPlayerWinning && round.currentKing != msg.sender) {
-            // the king is dead, long live the king
-            round.currentKing = msg.sender;
+            round.currentKing = msg.sender; // the king is dead, long live the king
             round.lastCoronationTimestamp = block.timestamp; // ta-da-da-da!!
         }
 
@@ -163,9 +161,13 @@ contract Hill is GasClaimer {
     /// @notice claims all gas fees and any ETH balance to sender if they are current round's king for
     /// longer than claimDelay. Then starts a new round.
     function claimWinnings() external returns (uint amount) {
-        Round storage round = rounds[lastRoundIndex()];
+        uint roundIndex = lastRoundIndex();
+        Round storage round = rounds[roundIndex];
         require(msg.sender == round.currentKing, "not king of the hill");
         require(block.timestamp >= round.lastCoronationTimestamp + claimDelay, "not king long enough yet");
+
+        // new round now before external calls
+        _startNewRound();
 
         // claim winnings
         _claimGas();
@@ -173,10 +175,7 @@ contract Hill is GasClaimer {
 
         // history (for UI)
         round.winnings = amount;
-        emit RoundWon(msg.sender, lastRoundIndex(), amount, players[msg.sender].points, round.totalPoints);
-
-        // new round now before external call
-        _startNewRound();
+        emit RoundWon(msg.sender, roundIndex, amount, players[msg.sender].points, round.totalPoints);
 
         // send
         (bool success,) = address(msg.sender).call{ value: amount }("");
