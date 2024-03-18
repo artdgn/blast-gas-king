@@ -7,16 +7,19 @@ import { StdCheats } from "forge-std/src/StdCheats.sol";
 import { GasKingGame, Hill } from "../src/GasKingGame.sol";
 
 contract MockBlast {
-    function configureClaimableGas() external {}
-    function configureAutomaticYield() external {}
-    function claimAllGas(address contractAddress, address recipientOfGas) external returns (uint256) {
+    function configureClaimableGas() external { }
+    function configureAutomaticYield() external { }
+
+    function claimAllGas(address contractAddress, address recipientOfGas) external returns (uint) {
         payable(recipientOfGas).transfer(address(this).balance);
         return address(this).balance;
     }
-    function claimMaxGas(address contractAddress, address recipientOfGas) external returns (uint256) {
+
+    function claimMaxGas(address contractAddress, address recipientOfGas) external returns (uint) {
         return 0;
     }
-    receive() external payable {}
+
+    receive() external payable { }
 }
 
 /// https://book.getfoundry.sh/forge/writing-tests
@@ -40,10 +43,9 @@ contract GasKingSetup is PRBTest, StdCheats {
     }
 }
 
-
 contract GasKingGameTest is GasKingSetup {
-
     event HillCreated(uint indexed, address);
+
     function testCreateHill() public {
         uint initialHillCount = gasKing.lastHillIndex() + 1;
         vm.expectEmit(true, true, false, false);
@@ -89,13 +91,14 @@ contract HillTest is GasKingSetup {
     Hill internal hill;
     uint constant GAS_PRICE = 1;
 
-    function setUp() public override virtual {
+    function setUp() public virtual override {
         super.setUp();
         hill = new Hill(1 days);
         vm.txGasPrice(GAS_PRICE);
     }
 
     event Burned(address indexed, uint indexed, bool indexed, uint amount, uint gas);
+
     function testBurnForPointsSimple() public {
         (uint initialPoints,) = hill.players(address(this));
         Hill.Round memory round = hill.getRound(hill.lastRoundIndex());
@@ -109,7 +112,7 @@ contract HillTest is GasKingSetup {
         vm.expectEmit(true, true, true, false);
         uint gas = 200_000;
         emit Burned(address(this), hill.lastRoundIndex(), true, (gas - 1000) * GAS_PRICE, gas);
-        hill.burnForPoints{gas: gas}();
+        hill.burnForPoints{ gas: gas }();
         (uint newPoints,) = hill.players(address(this));
         assertGt(newPoints, initialPoints, "Points not awarded");
         round = hill.getRound(hill.lastRoundIndex());
@@ -120,15 +123,18 @@ contract HillTest is GasKingSetup {
     }
 
     event RoundWon(address indexed, uint, uint, uint, uint);
+
     function testClaimWinningsSimple() public {
-        hill.burnForPoints{gas: 200_000}();
+        hill.burnForPoints{ gas: 200_000 }();
         uint claimable = 200_000 * 1 / 2;
         deal(BLAST_ADDRESS, claimable);
-        vm.warp(block.timestamp + hill.claimDelay() + 1);  // Increase time to pass claim delay
+        vm.warp(block.timestamp + hill.claimDelay() + 1); // Increase time to pass claim delay
         uint initialBalance = address(this).balance;
 
         vm.expectEmit(true, true, false, false);
-        emit RoundWon(address(this), hill.lastRoundIndex(), claimable, 200_000 * GAS_PRICE, 200_000 * GAS_PRICE);
+        emit RoundWon(
+            address(this), hill.lastRoundIndex(), claimable, 200_000 * GAS_PRICE, 200_000 * GAS_PRICE
+        );
 
         hill.claimWinnings();
         assertEq(address(this).balance, initialBalance + claimable, "Winnings not claimed");
@@ -137,10 +143,11 @@ contract HillTest is GasKingSetup {
     }
 
     event GasFeesClaimed(uint);
+
     function testClaimWinningsGasFeesClaimedEvent() public {
-        hill.burnForPoints{gas: 200_000}();
+        hill.burnForPoints{ gas: 200_000 }();
         deal(BLAST_ADDRESS, 1 ether);
-        vm.warp(block.timestamp + hill.claimDelay() + 1);  // Increase time to pass claim delay
+        vm.warp(block.timestamp + hill.claimDelay() + 1); // Increase time to pass claim delay
 
         vm.expectEmit(false, false, false, true);
         emit GasFeesClaimed(1 ether);
@@ -148,8 +155,9 @@ contract HillTest is GasKingSetup {
     }
 
     event NewRound(uint);
+
     function testClaimWinningsStartsNewRound() public {
-        hill.burnForPoints{gas: 200_000}();
+        hill.burnForPoints{ gas: 200_000 }();
         vm.warp(block.timestamp + hill.claimDelay() + 1);
         uint initialRound = hill.lastRoundIndex();
 
@@ -169,7 +177,7 @@ contract HillTest is GasKingSetup {
 
     function testClaimWinningsBeforeDelayReverts() public {
         deal(address(this), 1 ether);
-        hill.burnForPoints{gas: 200_000}();
+        hill.burnForPoints{ gas: 200_000 }();
         vm.expectRevert("not king long enough yet");
         hill.claimWinnings();
     }
@@ -195,7 +203,7 @@ contract HillTest is GasKingSetup {
     function testClaimWinningsTransferETHReverts() public {
         deal(address(BLAST_ADDRESS), 1 ether);
         deal(address(this), 1 ether);
-        hill.burnForPoints{gas: 200_000}();
+        hill.burnForPoints{ gas: 200_000 }();
         vm.warp(block.timestamp + hill.claimDelay() + 1);
 
         receiveReverts = true;
@@ -205,26 +213,31 @@ contract HillTest is GasKingSetup {
 
     function testPlayerOvertake() public {
         vm.prank(address(1));
-        hill.burnForPoints{gas: 400_000}();
+        hill.burnForPoints{ gas: 400_000 }();
 
         vm.prank(address(2));
-        hill.burnForPoints{gas: 200_000}();
+        hill.burnForPoints{ gas: 200_000 }();
 
-        assertEq(hill.getRound(hill.lastRoundIndex()).currentKing, address(1), "Player 1 should be the current king");
+        assertEq(
+            hill.getRound(hill.lastRoundIndex()).currentKing,
+            address(1),
+            "Player 1 should be the current king"
+        );
 
         vm.prank(address(2));
-        hill.burnForPoints{gas: 300_000}();
+        hill.burnForPoints{ gas: 300_000 }();
 
-        assertEq(hill.getRound(hill.lastRoundIndex()).currentKing, address(2), "Player 2 should be the current king");
+        assertEq(
+            hill.getRound(hill.lastRoundIndex()).currentKing,
+            address(2),
+            "Player 2 should be the current king"
+        );
 
         (uint player1Points,) = hill.players(address(1));
         (uint player2Points,) = hill.players(address(2));
         assertGt(player2Points, player1Points, "Player 2 should have more points than Player 1");
     }
-
 }
-
-
 
 //    /// @dev Fork test that runs against an Ethereum Mainnet fork. For this to work, you need to set
 //    /// `API_KEY_ALCHEMY`
