@@ -31,8 +31,14 @@ Player Strategies:
 5. Historical data is saved for previous plays and accessible via `getRound`.
 6. Claimable amount off-chain is accessible via `claimableSimulate`.
 
-## Deployment on https://testnet.blastscan.io/:
-1. `GasKingGame` (w. 3 default hills): 0xF64E27cbb8bc66745a0343f8a73b678e34Ba5fad
+## Deployments
+
+### Mainnet on https://blastscan.io/:
+1. `GasKingGame` (w. 3 default hills): https://blastscan.io/address/0x0958f342bd16c243e500ebb20ec7593e19e77245#code. First `Hill`: https://blastscan.io/address/0x5e1038026368279e95179d693716c6bda6fdd25e#code.
+
+
+### Testnet: https://testnet.blastscan.io/:
+1. `GasKingGame` (w. 3 default hills): 0x0958f342bd16c243e500Ebb20ec7593e19e77245. First `Hill`: 0x5E1038026368279E95179D693716c6BDA6FDd25e.
 
 ## Interfaces:
 
@@ -50,7 +56,7 @@ interface GasKingGame {
 
 interface Hill {
   // mutative
-  function burnForPoints() external payable;
+  function burnForPoints() external;
   function claimWinnings() external returns (uint amount);
   receive() external payable;
 

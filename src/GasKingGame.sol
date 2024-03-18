@@ -8,7 +8,6 @@ abstract contract GasClaimer {
 
     constructor() {
         BLAST.configureClaimableGas();
-        BLAST.configureAutomaticYield();
     }
 
     //////// External mutative ////////
@@ -64,7 +63,7 @@ contract GasKingGame is GasClaimer {
     function claimFactoryGasAndETH() external returns (uint amount) {
         _claimGas();
         amount = address(this).balance;
-        (bool success,) = address(msg.sender).call{ value: amount }(""); // so generous
+        (bool success,) = address(msg.sender).call{ value: amount }("");
         require(success, "ETH transfer failed");
     }
 
